@@ -3,7 +3,7 @@ const router = express.Router();
 
 
 router.get('/', function(req, res){
-   
+   res.redirect('/');
 });
 
 router.get('/:id', function(req, res){

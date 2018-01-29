@@ -7,29 +7,57 @@ const Page = models.Page;
 const User = models.User;
 
 router.get('/', function(req, res){
-    res.redirect('/');
+    Page.findAll({})
+    .then(allPageinstances => {
+        res.render('index', {
+            pages: allPageinstances
+        });
+    })
 });
 
-router.post('/', function(req, res){
+router.post('/', function(req, res, next){
 
-    console.log(req.body);
+    // console.log(req.body);
 
-    var page = Page.build({
-        title: req.body.title,
-        content: req.body.content,
-        status: req.body.status,
-    })
-    var user = User.build({
-        name: req.body.name,
-        email: req.body.email,
-    })
-    // user.save()
-    // page.save()
-    Promise.all([user.save(),page.save()])
-    .then(function(userAndPage){
-        res.redirect(userAndPage[1].route);
-        //res.json({page, user})
-    })
+    // var page = Page.build({
+    //     title: req.body.title,
+    //     content: req.body.content,
+    //     status: req.body.status,
+    // })
+
+    // var user = User.build({
+    //     name: req.body.name,
+    //     email: req.body.email,
+    // })
+    // Promise.all([user.save(),page.save()])
+    // .then(function(userAndPage){
+    //     res.redirect(userAndPage[1].route);
+    //     //res.json({page, user})
+    // })
+    User.findOrCreate({
+        where: {
+          name: req.body.name,
+          email: req.body.email
+        }
+      })
+      .then(function (values) {
+      
+        var user = values[0];
+      
+        var page = Page.build({
+          title: req.body.title,
+          content: req.body.content
+        });
+      
+        return page.save().then(function (page) {
+          return page.setAuthor(user);
+        });
+      
+      })
+      .then(function (page) {
+        res.redirect(page.route);
+      })
+      .catch(next);
 });
 
 router.get('/add', function(req, res){

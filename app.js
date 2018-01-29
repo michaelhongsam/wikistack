@@ -39,8 +39,9 @@ models.db.sync({force: true})
         console.log('Server is listening on port 3000!');
     });
 })
-.catch(console.error);
+.catch(console.error.bind(console));
 
-// app.listen(3000, function(){
-//     console.log('listening on port 3000');
-// })
+app.use(function(err, req, res, next){
+    console.error(err.stack);
+    res.status(err.status || 500).send(err.message || "internal server error");
+});
